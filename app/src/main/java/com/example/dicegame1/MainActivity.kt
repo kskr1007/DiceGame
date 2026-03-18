@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,7 +46,8 @@ fun Dice() {
     var dieIndex2 by remember { mutableIntStateOf(5) }
     var score1 by remember { mutableIntStateOf(0) }
     var score2 by remember { mutableIntStateOf(0) }
-
+    var isHeld1 by remember { mutableStateOf(false) }
+    var isHeld2 by remember { mutableStateOf(false) }
 
     val dieArray = arrayOf(
         R.drawable.dice1,
@@ -55,9 +58,8 @@ fun Dice() {
         R.drawable.dice6
     )
 
-    val gameOver = score1 >= 21 || score2 >= 21
-    val resultMessage = checkWinner(score1, score2)
-
+    val gameOver = score1 >= 21 || score2 >= 21 || (isHeld1 && isHeld2)
+    val resultMessage = checkWinner(score1, score2, isHeld1, isHeld2)
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -74,6 +76,7 @@ fun Dice() {
             // Player 1
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "Player 1", style = MaterialTheme.typography.titleLarge)
+                if (isHeld1) Text(text = "(Held)", color = MaterialTheme.colorScheme.secondary)
                 Spacer(modifier = Modifier.height(8.dp))
                 Image(
                     painter = painterResource(id = dieArray[dieIndex1]),
@@ -81,21 +84,30 @@ fun Dice() {
                     modifier = Modifier.size(140.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
+                Row {
+                    Button(
+                        onClick = {
                             dieIndex1 = rollDie()
                             score1 += dieIndex1 + 1
                         },
-                    enabled = !gameOver
-                )
-                {
-                    Text("Roll P1")
+                        enabled = !gameOver && !isHeld1
+                    ) {
+                        Text("Roll")
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Button(
+                        onClick = { isHeld1 = true },
+                        enabled = !gameOver && !isHeld1 && score1 > 0
+                    ) {
+                        Text("Hold")
+                    }
                 }
             }
 
             // Player 2
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "Player 2", style = MaterialTheme.typography.titleLarge)
+                if (isHeld2) Text(text = "(Held)", color = MaterialTheme.colorScheme.secondary)
                 Spacer(modifier = Modifier.height(8.dp))
                 Image(
                     painter = painterResource(id = dieArray[dieIndex2]),
@@ -103,15 +115,23 @@ fun Dice() {
                     modifier = Modifier.size(140.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
+                Row {
+                    Button(
+                        onClick = {
                             dieIndex2 = rollDie()
                             score2 += dieIndex2 + 1
                         },
-                    enabled = !gameOver
-                )
-                {
-                    Text("Roll P2")
+                        enabled = !gameOver && !isHeld2
+                    ) {
+                        Text("Roll")
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Button(
+                        onClick = { isHeld2 = true },
+                        enabled = !gameOver && !isHeld2 && score2 > 0
+                    ) {
+                        Text("Hold")
+                    }
                 }
             }
         }
@@ -133,6 +153,8 @@ fun Dice() {
                 score2 = 0
                 dieIndex1 = 5
                 dieIndex2 = 5
+                isHeld1 = false
+                isHeld2 = false
             }) {
                 Text("Play Again")
             }
@@ -140,8 +162,8 @@ fun Dice() {
     }
 }
 
-fun checkWinner(score1: Int, score2: Int): String {
-    // used AI to create blackjack win/lose conditions
+fun checkWinner(score1: Int, score2: Int, isHeld1: Boolean, isHeld2: Boolean): String {
+    // Used AI to create blackjack win conditions
     return when {
         score1 > 21 && score2 > 21 -> "Both Busted! Draw!"
         score1 > 21 -> "Player 1 Busted! Player 2 Wins!"
@@ -149,6 +171,13 @@ fun checkWinner(score1: Int, score2: Int): String {
         score1 == 21 && score2 == 21 -> "Double 21! It's a Tie!"
         score1 == 21 -> "Player 1 hits 21! P1 Wins!"
         score2 == 21 -> "Player 2 hits 21! P2 Wins!"
+        isHeld1 && isHeld2 -> {
+            when {
+                score1 > score2 -> "Player 1 Wins by Score!"
+                score2 > score1 -> "Player 2 Wins by Score!"
+                else -> "It's a Tie!"
+            }
+        }
         else -> "Blackjack"
     }
 }
