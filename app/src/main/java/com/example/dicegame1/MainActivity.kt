@@ -42,13 +42,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Dice() {
+    // keep track fo dye 1
     var dieIndex1 by remember { mutableIntStateOf(5) }
+    // keep track of dye 2
     var dieIndex2 by remember { mutableIntStateOf(5) }
+    // total for player 1
     var score1 by remember { mutableIntStateOf(0) }
+    // total for player 2
     var score2 by remember { mutableIntStateOf(0) }
+    // if player 1 holds
     var isHeld1 by remember { mutableStateOf(false) }
+    // if player 2 holds
     var isHeld2 by remember { mutableStateOf(false) }
 
+    // dice drawables
     val dieArray = arrayOf(
         R.drawable.dice1,
         R.drawable.dice2,
@@ -58,6 +65,7 @@ fun Dice() {
         R.drawable.dice6
     )
 
+    // game is over if either score passes 21 or of both players hold
     val gameOver = score1 >= 21 || score2 >= 21 || (isHeld1 && isHeld2)
     val resultMessage = checkWinner(score1, score2, isHeld1, isHeld2)
 
@@ -146,6 +154,7 @@ fun Dice() {
         Text(text = "Player 1: $score1", style = MaterialTheme.typography.bodyLarge)
         Text(text = "Player 2: $score2", style = MaterialTheme.typography.bodyLarge)
 
+        // play again button
         if (gameOver) {
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = {
@@ -164,13 +173,15 @@ fun Dice() {
 
 fun checkWinner(score1: Int, score2: Int, isHeld1: Boolean, isHeld2: Boolean): String {
     // Used AI to create blackjack win conditions
+    // evaluate busts
     return when {
         score1 > 21 && score2 > 21 -> "Both Busted! Draw!"
         score1 > 21 -> "Player 1 Busted! Player 2 Wins!"
         score2 > 21 -> "Player 2 Busted! Player 1 Wins!"
-        score1 == 21 && score2 == 21 -> "Double 21! It's a Tie!"
-        score1 == 21 -> "Player 1 hits 21! P1 Wins!"
-        score2 == 21 -> "Player 2 hits 21! P2 Wins!"
+        score1 == 21 && score2 == 21 -> "Tie!"
+        score1 == 21 -> "Player 1 hits 21! Player 1 Wins!"
+        score2 == 21 -> "Player 2 hits 21! Player 2 Wins!"
+        // if both players hold then evaluate scores
         isHeld1 && isHeld2 -> {
             when {
                 score1 > score2 -> "Player 1 Wins by Score!"
@@ -178,6 +189,7 @@ fun checkWinner(score1: Int, score2: Int, isHeld1: Boolean, isHeld2: Boolean): S
                 else -> "It's a Tie!"
             }
         }
+        // continue playing
         else -> "Blackjack"
     }
 }
