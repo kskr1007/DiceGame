@@ -55,6 +55,10 @@ fun Dice() {
         R.drawable.dice6
     )
 
+    val gameOver = score1 >= 21 || score2 >= 21
+    val resultMessage = checkWinner(score1, score2)
+
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -78,11 +82,11 @@ fun Dice() {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick =
-                        {
+                    onClick = {
                             dieIndex1 = rollDie()
                             score1 += dieIndex1 + 1
-                        }
+                        },
+                    enabled = !gameOver
                 )
                 {
                     Text("Roll P1")
@@ -100,11 +104,11 @@ fun Dice() {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick =
-                        {
+                    onClick = {
                             dieIndex2 = rollDie()
                             score2 += dieIndex2 + 1
-                        }
+                        },
+                    enabled = !gameOver
                 )
                 {
                     Text("Roll P2")
@@ -114,11 +118,38 @@ fun Dice() {
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        val resultMessage = "Roll Dice"
-        Text(text = resultMessage, style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = resultMessage,
+            style = MaterialTheme.typography.headlineMedium
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "Player 1: $score1", style = MaterialTheme.typography.bodyLarge)
         Text(text = "Player 2: $score2", style = MaterialTheme.typography.bodyLarge)
+
+        if (gameOver) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = {
+                score1 = 0
+                score2 = 0
+                dieIndex1 = 5
+                dieIndex2 = 5
+            }) {
+                Text("Play Again")
+            }
+        }
+    }
+}
+
+fun checkWinner(score1: Int, score2: Int): String {
+    // used AI to create blackjack win/lose conditions
+    return when {
+        score1 > 21 && score2 > 21 -> "Both Busted! Draw!"
+        score1 > 21 -> "Player 1 Busted! Player 2 Wins!"
+        score2 > 21 -> "Player 2 Busted! Player 1 Wins!"
+        score1 == 21 && score2 == 21 -> "Double 21! It's a Tie!"
+        score1 == 21 -> "Player 1 hits 21! P1 Wins!"
+        score2 == 21 -> "Player 2 hits 21! P2 Wins!"
+        else -> "Blackjack"
     }
 }
 
