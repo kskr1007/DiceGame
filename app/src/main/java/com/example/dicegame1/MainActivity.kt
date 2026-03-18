@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -70,10 +74,15 @@ fun Dice() {
     val resultMessage = checkWinner(score1, score2, isHeld1, isHeld2)
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFADD8E6))
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Text(text = "Blackjack", style = MaterialTheme.typography.headlineLarge)
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,64 +91,77 @@ fun Dice() {
             verticalAlignment = Alignment.Top
         ) {
             // Player 1
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Player 1", style = MaterialTheme.typography.titleLarge)
-                if (isHeld1) Text(text = "(Held)", color = MaterialTheme.colorScheme.secondary)
-                Spacer(modifier = Modifier.height(8.dp))
-                Image(
-                    painter = painterResource(id = dieArray[dieIndex1]),
-                    contentDescription = "Player 1 Dice",
-                    modifier = Modifier.size(140.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row {
-                    Button(
-                        onClick = {
-                            dieIndex1 = rollDie()
-                            score1 += dieIndex1 + 1
-                        },
-                        enabled = !gameOver && !isHeld1
-                    ) {
-                        Text("Roll")
+            Card(
+                modifier = Modifier.weight(1f).padding(8.dp),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Player 1", style = MaterialTheme.typography.titleLarge)
+                    if (isHeld1) Text(text = "(Held)", color = MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Image(
+                        painter = painterResource(id = dieArray[dieIndex1]),
+                        contentDescription = "Player 1 Dice",
+                        modifier = Modifier.size(140.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row {
+                        Button(
+                            onClick = {
+                                dieIndex1 = rollDie()
+                                score1 += dieIndex1 + 1
+                            },
+                            enabled = !gameOver && !isHeld1
+                        ) {
+                            Text("Roll")
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Button(
+                            onClick = { isHeld1 = true },
+                            enabled = !gameOver && !isHeld1 && score1 > 0
+                        ) {
+                            Text("Hold")
+                        }
                     }
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Button(
-                        onClick = { isHeld1 = true },
-                        enabled = !gameOver && !isHeld1 && score1 > 0
-                    ) {
-                        Text("Hold")
-                    }
+                    Text(text = "$score1", style = MaterialTheme.typography.bodyLarge)
                 }
             }
 
             // Player 2
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Player 2", style = MaterialTheme.typography.titleLarge)
-                if (isHeld2) Text(text = "(Held)", color = MaterialTheme.colorScheme.secondary)
-                Spacer(modifier = Modifier.height(8.dp))
-                Image(
-                    painter = painterResource(id = dieArray[dieIndex2]),
-                    contentDescription = "Player 2 Dice",
-                    modifier = Modifier.size(140.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row {
-                    Button(
-                        onClick = {
-                            dieIndex2 = rollDie()
-                            score2 += dieIndex2 + 1
-                        },
-                        enabled = !gameOver && !isHeld2
-                    ) {
-                        Text("Roll")
+            Card(
+                modifier = Modifier.weight(1f).padding(8.dp),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Player 2", style = MaterialTheme.typography.titleLarge)
+                    if (isHeld2) Text(text = "(Held)", color = MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Image(
+                        painter = painterResource(id = dieArray[dieIndex2]),
+                        contentDescription = "Player 2 Dice",
+                        modifier = Modifier.size(140.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row {
+                        Button(
+                            onClick = {
+                                dieIndex2 = rollDie()
+                                score2 += dieIndex2 + 1
+                            },
+                            enabled = !gameOver && !isHeld2
+                        ) {
+                            Text("Roll")
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Button(
+                            onClick = { isHeld2 = true },
+                            enabled = !gameOver && !isHeld2 && score2 > 0
+                        ) {
+                            Text("Hold")
+                        }
                     }
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Button(
-                        onClick = { isHeld2 = true },
-                        enabled = !gameOver && !isHeld2 && score2 > 0
-                    ) {
-                        Text("Hold")
-                    }
+                    Text(text = "$score2", style = MaterialTheme.typography.bodyLarge)
+
                 }
             }
         }
@@ -148,11 +170,9 @@ fun Dice() {
 
         Text(
             text = resultMessage,
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Player 1: $score1", style = MaterialTheme.typography.bodyLarge)
-        Text(text = "Player 2: $score2", style = MaterialTheme.typography.bodyLarge)
 
         // play again button
         if (gameOver) {
@@ -190,7 +210,7 @@ fun checkWinner(score1: Int, score2: Int, isHeld1: Boolean, isHeld2: Boolean): S
             }
         }
         // continue playing
-        else -> "Blackjack"
+        else -> ""
     }
 }
 
