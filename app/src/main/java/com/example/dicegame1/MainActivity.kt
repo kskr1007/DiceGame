@@ -43,6 +43,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+var newGame = false
 
 @Composable
 fun Dice() {
@@ -71,7 +72,8 @@ fun Dice() {
 
     // game is over if either score passes 21 or of both players hold
     val gameOver = score1 >= 21 || score2 >= 21 || (isHeld1 && isHeld2)
-    val resultMessage = checkWinner(score1, score2, isHeld1, isHeld2)
+    val resultMessage = checkRound(score1, score2, isHeld1, isHeld2)
+
 
     Column(
         modifier = Modifier
@@ -82,6 +84,16 @@ fun Dice() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(text = "Blackjack", style = MaterialTheme.typography.headlineLarge)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Best of 3 \n Player 1: $totalScore1 \n Player 2: $totalScore2",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+
         Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
@@ -175,8 +187,30 @@ fun Dice() {
         )
 
         // play again button
-        if (gameOver) {
-            Spacer(modifier = Modifier.height(24.dp))
+        if (gameOver&&!newGame) {
+            if (roundsPlayed < maxRounds) {
+                // Still more rounds left
+                Button(onClick = {
+                    score1 = 0
+                    score2 = 0
+                    dieIndex1 = 5
+                    dieIndex2 = 5
+                    isHeld1 = false
+                    isHeld2 = false
+                }
+                )
+                {
+                    Text("Play Next Round")
+                }
+            }
+        }
+        // start new game button
+        else if(gameOver){
+            newGame = false
+            totalScore1 = 0;
+            totalScore2 = 0;
+            roundsPlayed = 0;
+
             Button(onClick = {
                 score1 = 0
                 score2 = 0
@@ -184,35 +218,64 @@ fun Dice() {
                 dieIndex2 = 5
                 isHeld1 = false
                 isHeld2 = false
-            }) {
-                Text("Play Again")
+            }
+            )
+            {
+                Text("Start New Game")
             }
         }
     }
 }
 
-fun checkWinner(score1: Int, score2: Int, isHeld1: Boolean, isHeld2: Boolean): String {
-    // Used AI to create blackjack win conditions
-    // evaluate busts
-    return when {
-        score1 > 21 && score2 > 21 -> "Both Busted! Draw!"
-        score1 > 21 -> "Player 1 Busted! Player 2 Wins!"
-        score2 > 21 -> "Player 2 Busted! Player 1 Wins!"
-        score1 == 21 && score2 == 21 -> "Tie!"
-        score1 == 21 -> "Player 1 hits 21! Player 1 Wins!"
-        score2 == 21 -> "Player 2 hits 21! Player 2 Wins!"
-        // if both players hold then evaluate scores
+var totalScore1 = 0
+var totalScore2 = 0
+var roundsPlayed = 0
+const val maxRounds = 3
+
+fun checkRound(score1: Int, score2: Int, isHeld1: Boolean, isHeld2: Boolean): String {
+    // Used AI to generate win conditions
+    if (roundsPlayed >= maxRounds) return "Player 1: $totalScore1, Player 2: $totalScore2"
+
+    var roundMessage = when {
+        score1 > 21 && score2 > 21 -> "Both players busted! Round is a draw."
+        score1 > 21 -> "Player 1 busted! Player 2 wins this round!"
+        score2 > 21 -> "Player 2 busted! Player 1 wins this round!"
+        score1 == 21 && score2 == 21 -> "Both hit 21! Round is a tie."
+        score1 == 21 -> "Player 1 hits 21! Player 1 wins this round!"
+        score2 == 21 -> "Player 2 hits 21! Player 2 wins this round!"
         isHeld1 && isHeld2 -> {
             when {
-                score1 > score2 -> "Player 1 Wins by Score!"
-                score2 > score1 -> "Player 2 Wins by Score!"
-                else -> "It's a Tie!"
+                score1 > score2 -> "Both held. Player 1 wins this round with higher score!"
+                score2 > score1 -> "Both held. Player 2 wins this round with higher score!"
+                else -> "Both held. Round is a tie!"
             }
         }
-        // continue playing
         else -> ""
     }
+
+    // Update totals if round ended
+    if (roundMessage.isNotEmpty()) {
+        when {
+            roundMessage.contains("Player 1 wins") -> totalScore1++
+            roundMessage.contains("Player 2 wins") -> totalScore2++
+        }
+        roundsPlayed++
+    }
+
+    // If best of 3 game is over, add final winner message
+    if (roundsPlayed >= maxRounds) {
+        val finalWinner = when {
+            totalScore1 > totalScore2 -> "Player 1 wins!"
+            totalScore2 > totalScore1 -> "Player 2 wins!"
+            else -> "The game ends in a tie!"
+        }
+        newGame =true
+        roundMessage += "\n\n$finalWinner \n Final Score - Player 1: $totalScore1, Player 2: $totalScore2"
+    }
+    return roundMessage
 }
+
+
 
 fun rollDie():Int{
     val roll=(0..5).random()
@@ -224,3 +287,4 @@ fun rollDie():Int{
 fun DicePreview() {
     Dice()
 }
+
